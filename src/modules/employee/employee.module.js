@@ -7,6 +7,43 @@ const {
 } = require("../../validation/employee.validation");
 const validate = require("../../validation");
 
+// Delete certificate for an employee
+router.delete(
+  "/:id/certificates/:certId",
+  passport.authenticate("jwt", { session: false }),
+  employeeController.deleteCertificate
+);
+
+// Employee certificates
+router.post(
+  "/:id/certificates",
+  passport.authenticate("jwt", { session: false }),
+  employeeController.addCertificate
+);
+router.get(
+  "/certificates/count",
+  passport.authenticate("jwt", { session: false }),
+  employeeController.countCertificates
+);
+
+// Get certificates for an employee
+router.get(
+  "/:id/certificates",
+  passport.authenticate("jwt", { session: false }),
+  employeeController.getCertificates
+);
+// Employee certificates
+router.post(
+  "/:id/certificates",
+  passport.authenticate("jwt", { session: false }),
+  employeeController.addCertificate
+);
+router.get(
+  "/certificates/count",
+  passport.authenticate("jwt", { session: false }),
+  employeeController.countCertificates
+);
+
 // Employee CRUD
 router.get(
   "/",

@@ -1,3 +1,136 @@
+/**
+ * @swagger
+ * /api/employees/{id}/certificates/{certId}:
+ *   delete:
+ *     summary: Delete a certificate for an employee
+ *     tags: [Employee]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: certId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Certificate deleted
+ */
+exports.deleteCertificate = async (req, res) => {
+  try {
+    const employeeId = req.params.id;
+    const certId = req.params.certId;
+    await require("../../shared/repositories/employee-certificate.repository").deleteById(
+      certId,
+      employeeId
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to delete certificate", error: err.message });
+  }
+};
+/**
+ * @swagger
+ * /api/employees/{id}/certificates:
+ *   get:
+ *     summary: Get certificates for an employee
+ *     tags: [Employee]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of certificates
+ */
+exports.getCertificates = async (req, res) => {
+  try {
+    const employeeId = req.params.id;
+    const certs =
+      await require("../../shared/repositories/employee-certificate.repository").findAllByEmployee(
+        employeeId
+      );
+    res.json(certs);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch certificates", error: err.message });
+  }
+};
+/**
+ * @swagger
+ * /api/employees/{id}/certificates:
+ *   post:
+ *     summary: Add a certificate for an employee
+ *     tags: [Employee]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: Certificate added
+ */
+exports.addCertificate = async (req, res) => {
+  try {
+    const employeeId = req.params.id;
+    const certData = req.body;
+    // ...existing code...
+    const cert = await empService.addCertificate(employeeId, certData);
+    // ...existing code...
+    res.status(201).json(cert);
+  } catch (err) {
+    // ...existing code...
+    res
+      .status(500)
+      .json({ message: "Failed to add certificate", error: err.message });
+  }
+};
+
+/**
+ * @swagger
+ * /api/employees/certificates/count:
+ *   get:
+ *     summary: Get total certificates for a company
+ *     tags: [Employee]
+ *     parameters:
+ *       - name: companyId
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Total certificates
+ */
+exports.countCertificates = async (req, res) => {
+  try {
+    const { companyId } = req.query;
+    if (!companyId)
+      return res.status(400).json({ message: "companyId required" });
+    const count = await empService.countCertificates(companyId);
+    res.json({ count });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to count certificates", error: err.message });
+  }
+};
 const empService = require("./employee.service");
 
 /**
@@ -42,7 +175,7 @@ exports.getAll = async (req, res) => {
     const employees = await empService.getAll(cid);
     return res.json(employees);
   } catch (err) {
-    console.error("Failed to fetch employees:", err);
+    // ...existing code...
     return res
       .status(500)
       .json({ message: "Failed to fetch employees", error: err.message });
@@ -101,7 +234,7 @@ exports.create = async (req, res) => {
     const result = await empService.create(req.body);
     res.status(201).json(result);
   } catch (err) {
-    console.error("Error creating employee:", err);
+    // ...existing code...
     res
       .status(500)
       .json({ message: "Failed to create employee", error: err.message });

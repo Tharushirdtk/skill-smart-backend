@@ -53,6 +53,8 @@ exports.create = async (data) => {
 exports.update = (id, data) => employeeRepo.update(id, data);
 exports.delete = (id) => employeeRepo.delete(id);
 
+const employeeCertificateRepo = require("../../shared/repositories/employee-certificate.repository");
+
 exports.getSkills = (employeeId) =>
   employeeSkillRepo.findByEmployeeId(employeeId);
 exports.addSkill = (employeeId, data) =>
@@ -61,3 +63,12 @@ exports.updateSkill = (employeeId, skillId, data) =>
   employeeSkillRepo.updateForEmployee(employeeId, skillId, data);
 exports.deleteSkill = (employeeId, skillId) =>
   employeeSkillRepo.deleteForEmployee(employeeId, skillId);
+
+// Certificate functions
+exports.addCertificate = (employeeId, certData) => {
+  return employeeCertificateRepo.save({ ...certData, employeeId });
+};
+
+exports.countCertificates = (companyId) => {
+  return employeeCertificateRepo.countAll(companyId);
+};
