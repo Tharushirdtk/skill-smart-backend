@@ -97,7 +97,6 @@ exports.getOne = async (req, res) => {
  *         description: Employee created
  */
 exports.create = async (req, res) => {
-  console.log("Creating employee with data:", req.body);
   try {
     const result = await empService.create(req.body);
     res.status(201).json(result);

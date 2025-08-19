@@ -4,11 +4,17 @@ exports.findSkillsAssignedToCompany = async (companyId) => {
     where: { employee: { companyId: companyId } },
     relations: ["skill", "employee"],
   });
-  // Get unique skills
+  // Aggregate skills and count employees per skill
   const skillMap = new Map();
   for (const es of esRows) {
-    if (es.skill && !skillMap.has(es.skill.id)) {
-      skillMap.set(es.skill.id, es.skill);
+    if (es.skill) {
+      if (!skillMap.has(es.skill.id)) {
+        skillMap.set(es.skill.id, { ...es.skill, employeeCount: 1 });
+      } else {
+        const skillObj = skillMap.get(es.skill.id);
+        skillObj.employeeCount += 1;
+        skillMap.set(es.skill.id, skillObj);
+      }
     }
   }
   return Array.from(skillMap.values());
