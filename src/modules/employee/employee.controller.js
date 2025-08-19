@@ -25,10 +25,25 @@ const empService = require("./employee.service");
  */
 exports.getAll = async (req, res) => {
   try {
-    const employees = await empService.getAll();
-    res.json(employees);
+    const { companyId } = req.query;
+
+    if (!companyId) {
+      return res
+        .status(400)
+        .json({ message: "companyId query parameter is required" });
+    }
+
+    const cid = parseInt(companyId, 10);
+    if (Number.isNaN(cid)) {
+      return res
+        .status(400)
+        .json({ message: "companyId must be a valid number" });
+    }
+    const employees = await empService.getAll(cid);
+    return res.json(employees);
   } catch (err) {
-    res
+    console.error("Failed to fetch employees:", err);
+    return res
       .status(500)
       .json({ message: "Failed to fetch employees", error: err.message });
   }
@@ -87,6 +102,7 @@ exports.create = async (req, res) => {
     const result = await empService.create(req.body);
     res.status(201).json(result);
   } catch (err) {
+    console.error("Error creating employee:", err);
     res
       .status(500)
       .json({ message: "Failed to create employee", error: err.message });

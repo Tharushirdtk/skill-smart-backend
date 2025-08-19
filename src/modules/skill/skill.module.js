@@ -43,4 +43,10 @@ router.get(
   skillController.getUsersBySkill
 );
 
+router.get(
+  "/company-assigned",
+  passport.authenticate("jwt", { session: false }),
+  skillController.getCompanyAssignedSkills
+);
+
 module.exports = router;

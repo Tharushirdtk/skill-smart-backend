@@ -11,14 +11,14 @@ module.exports = new EntitySchema({
     role: { type: "enum", enum: ["admin", "employee"], default: "employee" },
     joinDate: { type: "date" },
     position: { type: "varchar", nullable: true },
-    companyId: { type: "int", nullable: true }, // 👈 explicitly add FK column
+    companyId: { type: "int", nullable: true },
   },
   relations: {
     company: {
       type: "many-to-one",
       target: "Company",
       joinColumn: {
-        name: "companyId", // 👈 link relation to companyId
+        name: "companyId",
       },
       cascade: false,
     },

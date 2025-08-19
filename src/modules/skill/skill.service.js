@@ -10,18 +10,18 @@ const { scoreToProficiency } = require("../../shared/utils/skill-utils");
  * - avgProficiency (human label or null)
  * - trending (boolean)
  */
-exports.getAll = async () => {
-  // fetch base skills (returns array of skill entities)
+exports.getAll = async (companyId) => {
   const skills = await skillRepository.findAll();
 
   const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
   const now = Date.now();
 
-  // For each skill, load its employee-skill rows and compute aggregates
   const augmented = await Promise.all(
     (skills || []).map(async (skill) => {
-      // employeeSkillRepository.findBySkillId returns ES rows with relation "employee"
-      const esRows = await employeeSkillRepository.findBySkillId(skill.id);
+      const esRows = await employeeSkillRepository.findBySkillId(
+        skill.id,
+        companyId
+      );
       const es = Array.isArray(esRows) ? esRows : [];
 
       const employeeCount = es.length;
@@ -49,11 +49,10 @@ exports.getAll = async () => {
         id: skill.id,
         name: skill.name,
         category: skill.category,
-        // include description if you add it to Skill entity/table; otherwise empty string
         description: skill.description || "",
         employeeCount,
-        avgProficiency, // e.g. "Intermediate" (or null)
-        avgProficiencyScore: avgScore, // numeric avg or null
+        avgProficiency,
+        avgProficiencyScore: avgScore,
         trending,
       };
     })
@@ -82,12 +81,19 @@ exports.delete = (id) => {
  * Each item contains: { employee, proficiency, proficiencyScore, lastUpdated }
  * where `employee` is the employee entity loaded by the repo (may include id, name, email, etc).
  */
-exports.getUsersBySkill = async (skillId) => {
-  const rows = await employeeSkillRepository.findBySkillId(skillId);
+exports.getUsersBySkill = async (skillId, companyId) => {
+  const rows = await employeeSkillRepository.findBySkillId(skillId, companyId);
   return (rows || []).map((r) => ({
     employee: r.employee,
     proficiency: r.proficiency,
     proficiencyScore: r.proficiencyScore,
     lastUpdated: r.lastUpdated,
   }));
+};
+
+// Returns only skills assigned to employees of a given company
+exports.getCompanyAssignedSkills = async (companyId) => {
+  // Use the new helper from employee-skill.repository
+  const skills = await employeeSkillRepository.findSkillsAssignedToCompany(companyId);
+  return skills;
 };

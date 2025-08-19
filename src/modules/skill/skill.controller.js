@@ -25,7 +25,21 @@ const skillService = require("../skill/skill.service");
  */
 exports.getAll = async (req, res) => {
   try {
-    const skills = await skillService.getAll();
+    const { companyId } = req.query;
+
+    if (!companyId) {
+      return res
+        .status(400)
+        .json({ message: "companyId query parameter is required" });
+    }
+
+    const cid = parseInt(companyId, 10);
+    if (Number.isNaN(cid)) {
+      return res
+        .status(400)
+        .json({ message: "companyId must be a valid number" });
+    }
+    const skills = await skillService.getAll(cid);
     res.json(skills);
   } catch (err) {
     res
@@ -150,12 +164,64 @@ exports.delete = async (req, res) => {
  */
 exports.getUsersBySkill = async (req, res) => {
   try {
+    const { companyId } = req.query;
+
+    if (!companyId) {
+      return res
+        .status(400)
+        .json({ message: "companyId query parameter is required" });
+    }
+
+    const cid = parseInt(companyId, 10);
+    if (Number.isNaN(cid)) {
+      return res
+        .status(400)
+        .json({ message: "companyId must be a valid number" });
+    }
+
     const skillId = req.params.id;
-    const users = await skillService.getUsersBySkill(skillId);
+    const users = await skillService.getUsersBySkill(skillId, cid);
     res.json(users);
   } catch (err) {
     res
       .status(500)
       .json({ message: "Failed to fetch users for skill", error: err.message });
+  }
+};
+
+/**
+ * @swagger
+ * /skills/company-assigned:
+ *   get:
+ *     summary: Get only skills assigned to employees of a company
+ *     tags: [Skill]
+ *     parameters:
+ *       - name: companyId
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of company-assigned skills
+ *       400:
+ *         description: Missing or invalid companyId
+ *       500:
+ *         description: Failed to fetch skills
+ */
+exports.getCompanyAssignedSkills = async (req, res) => {
+  try {
+    const { companyId } = req.query;
+    if (!companyId) {
+      return res.status(400).json({ message: "companyId query parameter is required" });
+    }
+    const cid = parseInt(companyId, 10);
+    if (Number.isNaN(cid)) {
+      return res.status(400).json({ message: "companyId must be a valid number" });
+    }
+    const skills = await skillService.getCompanyAssignedSkills(cid);
+    res.json(skills);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch company-assigned skills", error: err.message });
   }
 };

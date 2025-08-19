@@ -1,3 +1,18 @@
+// --- Fetch all unique skills assigned to employees of a company ---
+exports.findSkillsAssignedToCompany = async (companyId) => {
+  const esRows = await esRepo.find({
+    where: { employee: { companyId: companyId } },
+    relations: ["skill", "employee"],
+  });
+  // Get unique skills
+  const skillMap = new Map();
+  for (const es of esRows) {
+    if (es.skill && !skillMap.has(es.skill.id)) {
+      skillMap.set(es.skill.id, es.skill);
+    }
+  }
+  return Array.from(skillMap.values());
+};
 const dataSource = require("../../config/data-source");
 const EmployeeSkill = require("../../shared/entities/EmployeeSkill");
 const Employee = require("../../shared/entities/Employee");
@@ -16,9 +31,12 @@ exports.findByEmployeeId = (employeeId) =>
   });
 
 // --- Fetch all employees who have a skill ---
-exports.findBySkillId = (skillId) =>
+exports.findBySkillId = (skillId, companyId) =>
   esRepo.find({
-    where: { skill: { id: parseInt(skillId, 10) } },
+    where: {
+      skill: { id: parseInt(skillId, 10) },
+      employee: { companyId: companyId },
+    },
     relations: ["employee"],
   });
 

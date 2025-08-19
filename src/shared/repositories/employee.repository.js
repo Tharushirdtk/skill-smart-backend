@@ -3,8 +3,19 @@ const Employee = require("../../shared/entities/Employee");
 
 const employeeRepo = dataSource.getRepository(Employee);
 
-exports.findAll = () =>
-  employeeRepo.find({ relations: ["skills", "skills.skill"] });
+exports.findAll = (companyId) => {
+  const relations = ["skills", "skills.skill"];
+
+  if (companyId !== undefined && companyId !== null) {
+    const cid = Number(companyId);
+    return employeeRepo.find({
+      where: { companyId: cid },
+      relations,
+    });
+  }
+
+  return employeeRepo.find({ relations });
+};
 
 exports.findById = (id) =>
   employeeRepo.findOne({
@@ -12,12 +23,15 @@ exports.findById = (id) =>
     relations: ["skills", "skills.skill"],
   });
 
-exports.findByEmail = (email) => employeeRepo.findOneBy({ email });
+exports.findByEmail = (email) => {
+  if (!email) return Promise.resolve(null);
+  return employeeRepo.findOneBy({ email });
+};
 
-// Create a new employee
 exports.create = (data) => employeeRepo.save(data);
 
-// Specifically create an admin employee
+exports.save = (entity) => employeeRepo.save(entity);
+
 exports.createAdminEmployee = (data) =>
   employeeRepo.save({
     ...data,
@@ -25,6 +39,6 @@ exports.createAdminEmployee = (data) =>
     joinDate: new Date(),
   });
 
-exports.update = (id, data) => employeeRepo.update(parseInt(id), data);
+exports.update = (id, data) => employeeRepo.update(id, data);
 
 exports.delete = (id) => employeeRepo.delete(id);
